@@ -1,0 +1,74 @@
+import os
+import csv 
+
+#1. Read data from CSV file
+#2. Calculate population density (population/area) for each country and add it as a new column of data
+#3. Find the country with the highest GDP and print its name along with the GDP value
+#4. Display the top 5 countries with the highest population density.
+
+#Planned process:
+#We have four CSV files to reference
+#1. Start with population and area (file is in square kilometers) to calculate population density
+    #Program must read data from two separate files to perform this calculation
+#2. We have a separate CSV file for GDP. Just find the max. 
+#3. Find the top 5 countries from the data acquired in the first equation. 
+
+os.chdir("Projects\CSV Files") #the script was trying to run from the main "Python Basics" folder - this changes the folder that it runs from
+                               #this was required because the script could not find any of the CSV files
+
+population = "global_population.csv"
+gdp = "current_gdp.csv"
+area = "surface_area_square_km.csv"
+
+excluded_countries = ["IDA & IBRD total", "IBRD only", "Early-demographic dividend", "East Asia & Pacific", "East Asia & Pacific (excluding high income)", "IDA total"]
+
+with open(population, "r") as csv_file_pop: #first section
+    csv_reader = csv.reader(csv_file_pop)
+    for _ in range(3): #skips three rows from the top
+        header = next(csv_reader)
+    population_data = []
+    countries = []
+    for column in csv_reader:
+        if len(column) >= 1 and column[0].strip() and column[0] not in excluded_countries: #verifies that the column has at least one element to it and is not blank
+            # print(column[0]) Column 0 is country names
+            # print(column[66]) Column 66 is 2022
+            try:
+                population_data.append(int(column[65])) #creates a list of integers based on the values from column 66
+                countries.append(column[0])
+            except ValueError:
+                break
+
+    global max_population
+    max_population = max(population_data) #Gives us the max value of the integer list made above
+    max_pop_index = population_data.index(max_population)
+    global country_with_max_pop 
+    country_with_max_pop = countries[max_pop_index]
+
+    print(f"The maximum population in 2021 was {max_population} people. It was {country_with_max_pop}.")
+
+#Using 2021 since the area file below only has area for 2021. If 2022, the greatest from the list is India. In 2021, it was China. 
+#However, we should be able to utilize the variable "country_with_max_pop" to not have to directly search for "China" in the following lists
+
+with open(area, "r") as csv_file_area: #second section
+    csv_reader = csv.reader(csv_file_area)
+    for _ in range(3):
+        header = next(csv_reader)
+    countries = []
+    area_sq_km = []
+    for column in csv_reader:
+        if len(column) >= 1 and column[0].strip() and column[0] not in excluded_countries:
+            #Column[0] is countries and column[65] is the 2021 area calculations
+            try:
+                area_sq_km.append(float(column[65])) #creates a numerical list of the area values
+                countries.append(column[0]) #creates a list of the countries found in column[0]
+            except ValueError:
+                break
+    if country_with_max_pop in countries: #verifies that the country found in the first section is present in the list created in the second section
+        index_max_pop_country = countries.index(country_with_max_pop) #finds index of the max pop country in the second list of countries
+        area_of_max_pop_country = area_sq_km[index_max_pop_country]
+        print(f"{country_with_max_pop} has the area of {area_of_max_pop_country} square kilometers.")
+
+print(f"The population density of {country_with_max_pop} is {max_population / area_of_max_pop_country} persons per square kilometer.")
+
+#What about calculating the population density of each country? 
+#We can try utilizing a global variable of the list population_data that we created in the first section
